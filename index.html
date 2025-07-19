@@ -168,3 +168,165 @@
 
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Reading Simulator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #pdf-viewer {
+      flex: 2;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #sidebar {
+      flex: 1;
+      background: #ffffff;
+      border-left: 2px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #timer {
+      font-size: 1.5rem;
+      color: #1a73e8;
+      margin-bottom: 20px;
+    }
+    #questions {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .question {
+      margin-bottom: 15px;
+    }
+    .question h4 {
+      margin: 0 0 5px;
+    }
+    .options label {
+      display: block;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #155ecf;
+    }
+    #result {
+      display: none;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="pdf-viewer">
+    <iframe id="pdf-frame" src="" title="IELTS Reading PDF"></iframe>
+  </div>
+  <div id="sidebar">
+    <div id="timer">60:00</div>
+    <div id="questions"></div>
+    <button id="submit">Submit Answers</button>
+    <div id="result"></div>
+  </div>
+
+  <input type="file" id="pdf-upload" accept="application/pdf" style="position: fixed; top: 10px; left: 10px; z-index: 10;" />
+
+  <script>
+    const timerElement = document.getElementById('timer');
+    const questionsElement = document.getElementById('questions');
+    const resultElement = document.getElementById('result');
+    const submitBtn = document.getElementById('submit');
+    let timeLeft = 60 * 60; // 60 minutes
+
+    // Timer countdown
+    function startTimer() {
+      const interval = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        timeLeft--;
+        if (timeLeft < 0) {
+          clearInterval(interval);
+          submitAnswers();
+        }
+      }, 1000);
+    }
+
+    // Example questions (you can load from JSON later)
+    const questions = [
+      { id: 1, text: "Question 1: True, False or Not Given?", type: "TFNG", options: ["True", "False", "Not Given"] },
+      { id: 2, text: "Question 2: Choose the correct letter A, B, C.", type: "MCQ", options: ["A", "B", "C"] },
+      { id: 3, text: "Question 3: True, False or Not Given?", type: "TFNG", options: ["True", "False", "Not Given"] },
+    ];
+
+    function loadQuestions() {
+      questions.forEach(q => {
+        const div = document.createElement('div');
+        div.className = 'question';
+        div.innerHTML = `<h4>${q.text}</h4>`;
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'options';
+        q.options.forEach(opt => {
+          const label = document.createElement('label');
+          label.innerHTML = `<input type="radio" name="q${q.id}" value="${opt}"> ${opt}`;
+          optionsDiv.appendChild(label);
+        });
+        div.appendChild(optionsDiv);
+        questionsElement.appendChild(div);
+      });
+    }
+
+    function submitAnswers() {
+      let score = 0;
+      questions.forEach(q => {
+        const selected = document.querySelector(`input[name="q${q.id}"]:checked`);
+        if (selected) {
+          // Example: pretend answer is always "True" for demo
+          if (selected.value === "True") score++;
+        }
+      });
+      resultElement.style.display = 'block';
+      resultElement.textContent = `You answered ${score} out of ${questions.length} correctly.`;
+    }
+
+    submitBtn.addEventListener('click', submitAnswers);
+
+    // PDF upload
+    document.getElementById('pdf-upload').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        document.getElementById('pdf-frame').src = fileURL;
+      }
+    });
+
+    // Init
+    loadQuestions();
+    startTimer();
+  </script>
+</body>
+</html>
+
